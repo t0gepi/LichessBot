@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Lichess Bot
-// @description  Fully automated lichess bot
-// @author       NuroC, t0gepi
+// @description  Bot will play every move automatically exepect if it is white, then it will not play the first move.
+// @author       t0gepi
 // @match         *://lichess.org/*
 // @run-at        document-start
 // @grant         none
-// @require       https://cdn.jsdelivr.net/gh/NuroC/stockfish.js/stockfish.js
+// @require       https://cdn.jsdelivr.net/gh/t0gepi/LichessBot/torchrip.js
 // ==/UserScript==
 
 let chessEngine;
@@ -13,9 +13,6 @@ let moves = [];
 let bestMove;
 let webSocketWrapper = null;
 
-function initializeChessEngine() {
-    chessEngine = window.STOCKFISH();
-}
 
 function interceptWebSocket() {
     let webSocket = window.WebSocket;
@@ -47,7 +44,6 @@ function interceptWebSocket() {
             return wrappedWebSocket;
         }
     });
-
     window.WebSocket = webSocketProxy;
 }
 
@@ -56,26 +52,15 @@ function calculateMove() {
     chessEngine.postMessage("go depth 14");
 }
 
-function setupChessEngineOnMessage() {
-    chessEngine.onmessage = function (event) {
-        if (event && event.includes("bestmove")) {
-            bestMove = event.split(" ")[1];
-            webSocketWrapper.send(JSON.stringify({
-                t: "move",
-                d: { u: bestMove, b: 1, l: 100, a: 1 }
-            }));
-        }
-    };
-}
 
-initializeChessEngine();
+chessEngine = window.TORCH();
 interceptWebSocket();
-setupChessEngineOnMessage();
-window.addEventListener('keydown', function(event) {
-    if (event.key === 'x' || event.key === 'X') {
+chessEngine.onmessage = function (event) {
+    if (event && event.includes("bestmove")) {
+        bestMove = event.split(" ")[1];
         webSocketWrapper.send(JSON.stringify({
-            t: "talk",
-            d: "Just resign it is completely lost..."
+            t: "move",
+            d: { u: bestMove, b: 1, l: 100, a: 1 }
         }));
     }
-});
+};
