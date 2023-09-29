@@ -13,7 +13,6 @@ let moves = [];
 let bestMove;
 let webSocketWrapper = null;
 
-
 function interceptWebSocket() {
     let webSocket = window.WebSocket;
     const webSocketProxy = new Proxy(webSocket, {
